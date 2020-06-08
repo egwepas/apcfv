@@ -47,7 +47,7 @@
                             </descriptorRefs>
                             <archive>
                                 <manifest>
-                                    <mainClass>com.ericsson.eit.profiler.viewer.JMainFrame</mainClass>
+                                    <mainClass>com.github.egwepas.apcfv.JMainFrame</mainClass>
                                 </manifest>
                             </archive>
                         </configuration>

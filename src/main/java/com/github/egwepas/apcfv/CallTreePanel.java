@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.ericsson.eit.profiler.viewer;
+package com.github.egwepas.apcfv;
 
 import java.util.Arrays;
 import javax.swing.JTree;

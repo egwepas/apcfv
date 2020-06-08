@@ -235,7 +235,7 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
               <SubComponents>
-                <Component class="com.ericsson.eit.profiler.viewer.CallTreePanel" name="forwardCallsTreePanel">
+                <Component class="com.github.egwepas.apcfv.CallTreePanel" name="forwardCallsTreePanel">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="ff" green="ff" id="TabbedPane.highlight" palette="3" red="ff" type="palette"/>
@@ -250,7 +250,7 @@
                     </Constraint>
                   </Constraints>
                 </Component>
-                <Component class="com.ericsson.eit.profiler.viewer.CallTreePanel" name="backwardCallsTreePanel">
+                <Component class="com.github.egwepas.apcfv.CallTreePanel" name="backwardCallsTreePanel">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="ff" green="ff" id="TabbedPane.highlight" palette="3" red="ff" type="palette"/>

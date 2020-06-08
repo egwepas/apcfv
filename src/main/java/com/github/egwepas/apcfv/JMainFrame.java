@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.ericsson.eit.profiler.viewer;
+package com.github.egwepas.apcfv;
 
 import java.awt.Component;
 import java.io.ByteArrayOutputStream;
@@ -128,8 +128,8 @@ public class JMainFrame extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
-        forwardCallsTreePanel = new com.ericsson.eit.profiler.viewer.CallTreePanel();
-        backwardCallsTreePanel = new com.ericsson.eit.profiler.viewer.CallTreePanel();
+        forwardCallsTreePanel = new com.github.egwepas.apcfv.CallTreePanel();
+        backwardCallsTreePanel = new com.github.egwepas.apcfv.CallTreePanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("profile-viewer");
@@ -311,8 +311,8 @@ public class JMainFrame extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.ericsson.eit.profiler.viewer.CallTreePanel backwardCallsTreePanel;
-    private com.ericsson.eit.profiler.viewer.CallTreePanel forwardCallsTreePanel;
+    private com.github.egwepas.apcfv.CallTreePanel backwardCallsTreePanel;
+    private com.github.egwepas.apcfv.CallTreePanel forwardCallsTreePanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JList<ProfilerMethod> jMethodsList;
     private javax.swing.JPanel jPanel1;
