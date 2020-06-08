@@ -36,9 +36,9 @@ public class Parser {
                 String thread;
                 if (line.startsWith("[")) {
                     stackStart = line.indexOf(']') + 2;
-                    thread = line.substring(1, stackStart - 1);
+                    thread = line.substring(1, stackStart - 2);
                 } else {
-                    thread = null;
+                    thread = "default";
                     stackStart = 0;
                 }
                 try {

@@ -5,6 +5,7 @@
  */
 package com.ericsson.eit.profiler.viewer;
 
+import java.util.Arrays;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -16,6 +17,8 @@ import javax.swing.tree.TreePath;
  * @author egwepas
  */
 public class CallTreePanel extends javax.swing.JPanel {
+
+    private boolean autoExpandEnabled = true;
 
     /**
      * Creates new form CallTreePanel
@@ -105,27 +108,41 @@ public class CallTreePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTreeTreeExpanded(javax.swing.event.TreeExpansionEvent evt) {//GEN-FIRST:event_jTreeTreeExpanded
-        JTree tree = (JTree) evt.getSource();
-        TreePath path = evt.getPath();
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-        int row = tree.getRowForPath(path);
-        if (node.getChildCount() == 1) {
-            tree.collapseRow(row + 1);
-            tree.expandRow(row + 1);
-        } else {
-            tree.setSelectionRow(row);
-            SwingUtilities.invokeLater(() -> tree.scrollPathToVisible(path));
+        if (autoExpandEnabled) {
+            JTree tree = (JTree) evt.getSource();
+            TreePath path = evt.getPath();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            int row = tree.getRowForPath(path);
+            if (node.getChildCount() == 1) {
+                tree.collapseRow(row + 1);
+                tree.expandRow(row + 1);
+            } else {
+                tree.setSelectionRow(row);
+                SwingUtilities.invokeLater(() -> tree.scrollPathToVisible(path));
+            }
         }
     }//GEN-LAST:event_jTreeTreeExpanded
 
     private void jNextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jNextButtonActionPerformed
+        searchTreeNodes(true);
+    }//GEN-LAST:event_jNextButtonActionPerformed
+
+    private void jPreviousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPreviousButtonActionPerformed
+        searchTreeNodes(false);
+    }//GEN-LAST:event_jPreviousButtonActionPerformed
+
+    private void searchTreeNodes(boolean forward) {
         String text = jTextFieldSearch.getText();
         TreePath currentPath = jTree.getSelectionPath();
+        if (null == currentPath) {
+            jTree.setSelectionRow(0);
+            currentPath = jTree.getSelectionPath();
+        }
         DefaultMutableTreeNode nextNode;
-        if (null != currentPath) {
+        if (forward) {
             nextNode = ((DefaultMutableTreeNode) currentPath.getLastPathComponent()).getNextNode();
         } else {
-            nextNode = (DefaultMutableTreeNode) jTree.getModel().getRoot();
+            nextNode = ((DefaultMutableTreeNode) currentPath.getLastPathComponent()).getPreviousNode();
         }
 
         boolean found = false;
@@ -137,23 +154,28 @@ public class CallTreePanel extends javax.swing.JPanel {
                 if (name.toLowerCase().contains(text.toLowerCase())) {
                     found = true;
                 } else {
-                    nextNode = nextNode.getNextNode();
+                    if (forward) {
+                        nextNode = nextNode.getNextNode();
+                    } else {
+                        nextNode = nextNode.getPreviousNode();
+                    }
                 }
             } else {
+                break;
+            }
+            if(null == nextNode){
                 break;
             }
         }
 
         if (found) {
+            autoExpandEnabled = false;
             TreePath path = new TreePath(nextNode.getPath());
             jTree.setSelectionPath(path);
             jTree.scrollPathToVisible(path);
+            autoExpandEnabled = true;
         }
-    }//GEN-LAST:event_jNextButtonActionPerformed
-
-    private void jPreviousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPreviousButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPreviousButtonActionPerformed
+    }
 
     public void setModel(DefaultTreeModel model, boolean reversed) {
         jTree.setCellRenderer(new CallTreeRenderer(reversed));

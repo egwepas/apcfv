@@ -261,7 +261,7 @@ public class JMainFrame extends javax.swing.JFrame {
         setTitle(getTitle() + " - " + file);
         profilerOutput = new Parser(file);
         List<String> threads = new ArrayList<>(profilerOutput.forwardTrees.keySet());
-        Collections.sort(threads);
+        Collections.sort(threads, (a, b) -> (a == null || b == null) ? 0 : a.compareTo(b));
 
         DefaultListModel<String> model = new DefaultListModel<>();
         for (String thread : threads) {
