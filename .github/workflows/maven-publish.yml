@@ -26,6 +26,6 @@ jobs:
       run: mvn -B package --file pom.xml
 
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+      run: mvn -B deploy -Dregistry=https://maven.pkg.github.com/egwepas -Dtoken=${{ secrets.APCFV_REPO_TOKEN }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
