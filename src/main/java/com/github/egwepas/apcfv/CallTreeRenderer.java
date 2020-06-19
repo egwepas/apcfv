@@ -20,7 +20,8 @@ import org.apache.commons.text.StringEscapeUtils;
  */
 class CallTreeRenderer extends DefaultTreeCellRenderer {
 
-    private static final String template = "<html><b>%.2f</b>%% - <span style='color:;'>%s</span><b>%s</b>";
+    //private static final String template = "<html><b>%.2f</b>%% - <span style='color:;'>%s</span><b>%s</b>";
+    private static final String template = "%.2f%% - %s%s";
 
     public CallTreeRenderer(boolean reversed) {
         Color grey = new Color(123, 144, 149);
@@ -46,9 +47,11 @@ class CallTreeRenderer extends DefaultTreeCellRenderer {
             
             String name = profilerNode.getName();
             String packagePart = name.substring(0, name.lastIndexOf('/') + 1);
-            packagePart = StringEscapeUtils.escapeHtml4(packagePart.replace('/', '.'));
-            String classPart = StringEscapeUtils.escapeHtml4(name.substring(name.lastIndexOf('/') + 1, name.length()));
-
+            //packagePart = StringEscapeUtils.escapeHtml4(packagePart.replace('/', '.'));
+            //String classPart = StringEscapeUtils.escapeHtml4(name.substring(name.lastIndexOf('/') + 1, name.length()));
+            packagePart = packagePart.replace('/', '.');
+            String classPart = name.substring(name.lastIndexOf('/') + 1, name.length());
+            
             setText(String.format(template, profilerNode.percentageOfTotal(), packagePart, classPart));
         }
         return this;
