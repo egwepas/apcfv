@@ -23,16 +23,21 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultTreeModel;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 import org.apache.commons.text.StringEscapeUtils;
+import javax.swing.event.DocumentListener;
 
 /**
  *
  * @author egwepas
  */
 public class JMainFrame extends javax.swing.JFrame {
+
+    public static double FILTER_THRESHOLD = 0.0002;
 
     /**
      * @param args the command line arguments
@@ -53,7 +58,7 @@ public class JMainFrame extends javax.swing.JFrame {
         });
     }
 
-    private Parser profilerOutput;
+    private ParserJfr profilerOutput;
     static private final String template = "<html><b>%.2f</b>%% - <span style='color:;'>%s</span><b>%s</b>";
 
     private DefaultListModel<ProfilerMethod> methodsModel;
@@ -105,6 +110,36 @@ public class JMainFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Error happenend while openning the file : " + os.toString("UTF8"));
             System.exit(-1);
         }
+
+        this.jTextFieldMethodsFilter.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if (null != methodsModel) {
+                    String filter = jTextFieldMethodsFilter.getText();
+                    if (!filter.isEmpty()) {
+                        DefaultListModel<ProfilerMethod> filteredMethodsModel = new DefaultListModel<>();
+                        for (int i = 0; i < methodsModel.getSize(); i++) {
+                            if (methodsModel.get(i).name.toLowerCase().contains(filter.toLowerCase())) {
+                                filteredMethodsModel.addElement(methodsModel.get(i));
+                            }
+                        }
+                        jMethodsList.setModel(filteredMethodsModel);
+                    } else {
+                        jMethodsList.setModel(methodsModel);
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -259,7 +294,7 @@ public class JMainFrame extends javax.swing.JFrame {
 
     private void openFile(File file) throws IOException {
         setTitle(getTitle() + " - " + file);
-        profilerOutput = new Parser(file);
+        profilerOutput = new ParserJfr(file);
         List<String> threads = new ArrayList<>(profilerOutput.forwardTrees.keySet());
         Collections.sort(threads, (a, b) -> (a == null || b == null) ? 0 : a.compareTo(b));
 
@@ -274,39 +309,28 @@ public class JMainFrame extends javax.swing.JFrame {
 
     private void jThreadsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jThreadsListValueChanged
 
-        new Thread(new Runnable() {
-            public void run() {
-                String thread = jThreadsList.getSelectedValue();
+        /*new Thread(new Runnable() {
+            public void run() {*/
+        String thread = jThreadsList.getSelectedValue();
 
-                forwardCallsTreePanel.setModel(new DefaultTreeModel(profilerOutput.forwardTrees.get(thread).toTreeNode()), false);
-                backwardCallsTreePanel.setModel(new DefaultTreeModel(profilerOutput.backwardTrees.get(thread).toTreeNode()), true);
+        forwardCallsTreePanel.setModel(new DefaultTreeModel(profilerOutput.forwardTrees.get(thread).toTreeNode()), false);
+        backwardCallsTreePanel.setModel(new DefaultTreeModel(profilerOutput.backwardTrees.get(thread).toTreeNode()), true);
 
-                methodsModel = new DefaultListModel<>();
-                List<ProfilerMethod> methods = profilerOutput.methodsMap.get(thread).getMethods();
-                for (ProfilerMethod method : methods) {
-                    methodsModel.addElement(method);
-                }
-                jMethodsList.setModel(methodsModel);
+        methodsModel = new DefaultListModel<>();
+        List<ProfilerMethod> methods = profilerOutput.methodsMap.get(thread).getMethods();
+        Collections.sort(methods, (a, b) -> -Math.round(Math.signum(a.percentageOfTotal() - b.percentageOfTotal())));
+        for (ProfilerMethod method : methods) {
+            if (method.percentageOfTotal() > FILTER_THRESHOLD * 100) {
+                methodsModel.addElement(method);
             }
-        }).start();
+        }
+        jMethodsList.setModel(methodsModel);
+        //    }
+        //}).start();
 
     }//GEN-LAST:event_jThreadsListValueChanged
 
     private void jTextFieldMethodsFilterKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldMethodsFilterKeyTyped
-        if (null != methodsModel) {
-            String filter = ((JTextField) evt.getSource()).getText();
-            if (!filter.isEmpty()) {
-                DefaultListModel<ProfilerMethod> filteredMethodsModel = new DefaultListModel<>();
-                for (int i = 0; i < methodsModel.getSize(); i++) {
-                    if (methodsModel.get(i).name.toLowerCase().contains(filter.toLowerCase())) {
-                        filteredMethodsModel.addElement(methodsModel.get(i));
-                    }
-                }
-                jMethodsList.setModel(filteredMethodsModel);
-            } else {
-                jMethodsList.setModel(methodsModel);
-            }
-        }
     }//GEN-LAST:event_jTextFieldMethodsFilterKeyTyped
 
 

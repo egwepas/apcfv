@@ -5,63 +5,70 @@
  */
 package com.github.egwepas.apcfv;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
+import one.jfr.ClassRef;
+import one.jfr.Frame;
+import one.jfr.JfrReader;
+import one.jfr.MethodRef;
+import one.jfr.Sample;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  *
  * @author egwepas
  */
-public class Parser {
+public class ParserJfr {
 
     public Map<String, ProfilerTree> forwardTrees = new HashMap<>();
     public Map<String, ProfilerTree> backwardTrees = new HashMap<>();
     public Map<String, ProfilerTree> backwardMethods = new HashMap<>();
     public Map<String, ProfilerMethods> methodsMap = new HashMap<>();
+    JfrReader reader;
 
-    public Parser(File f) throws IOException {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(f))))) {
-            System.out.println("Start parsing file " + f);
-            parse(br);
-            System.out.println("Finished parsing file " + f);
-        } catch (Exception e) {
-            try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-                System.out.println("Start parsing file " + f);
-                parse(br);
-                System.out.println("Finished parsing file " + f);
-            }
-        }
+    public ParserJfr(File f) throws IOException {
+        reader = new JfrReader(f.getAbsolutePath());
+        parse();
     }
 
-    public void parse(BufferedReader br) throws IOException {
-        String line;
-        while (null != (line = br.readLine())) {
-            int stackStart;
-            String thread;
-            if (line.startsWith("[")) {
-                stackStart = line.indexOf(']') + 2;
-                thread = line.substring(1, stackStart - 2);
-            } else {
-                thread = "default";
-                stackStart = 0;
-            }
+    private void parse() throws IOException {
+        Map<Pair<Integer, Integer>, Integer> counts = new HashMap();
+        for (Sample sample : reader.samples) {
+            counts.compute(Pair.of(sample.tid, sample.stackTraceId), (k, v) -> {
+                if (v == null) {
+                    return 1;
+                } else {
+                    return v + 1;
+                }
+            });
+        }
+        List<String> methods = new ArrayList<>();
+        for (Map.Entry<Pair<Integer, Integer>, Integer> entry : counts.entrySet()) {
+
+            //for (Sample sample : reader.samples) {
+            String thread = new String(reader.threads.get(entry.getKey().getLeft()));
+            Frame[] frames = reader.stackTraces.get(entry.getKey().getRight());
+
             try {
-                int countIndex = line.lastIndexOf(' ');
-                int count = Integer.valueOf(line.substring(countIndex + 1));
-                String stack = line.substring(stackStart, countIndex);
-                List<String> methods = Arrays.asList(stack.split(Pattern.quote(";")));
+                int count = entry.getValue();
+                methods.clear();
+                for (int i = frames.length - 1; i >= 0; i--) {
+                    Frame frame = frames[i];
+                    MethodRef methodRef = reader.methods.get(frame.method);
+                    ClassRef classRef = reader.classes.get(methodRef.cls);
+                    String className = new String(reader.symbols.get(classRef.name));
+                    String methodName = new String(reader.symbols.get(methodRef.name));
+                    if (!className.isEmpty()) {
+                        methods.add(className + "." + methodName);
+                    } else {
+                        methods.add(methodName);
+                    }
+                }
 
                 if (!forwardTrees.containsKey(thread)) {
                     forwardTrees.put(thread, new ProfilerTree());
@@ -91,7 +98,6 @@ public class Parser {
 
                 methodsMap.get(thread).add(methods, count);
             } catch (Exception e) {
-                System.err.println("Error handling line : " + line);
                 e.printStackTrace();
             }
         }

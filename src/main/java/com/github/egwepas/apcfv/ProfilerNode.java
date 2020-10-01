@@ -5,6 +5,7 @@
  */
 package com.github.egwepas.apcfv;
 
+import static com.github.egwepas.apcfv.JMainFrame.FILTER_THRESHOLD;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,10 +83,12 @@ public class ProfilerNode {
             ArrayList<ProfilerNode> list = new ArrayList<>(children.values());
             Collections.sort(list, (a, b) -> -(a.getCount() - b.getCount()));
             for (ProfilerNode profilerNode : list) {
-                childrenCount += profilerNode.getCount();
-                treeNode.add(profilerNode.toTreeNode());
+                childrenCount += profilerNode.count;
+                if (((1.0 * profilerNode.getCount()) / tree.getCount()) > FILTER_THRESHOLD) {
+                    treeNode.add(profilerNode.toTreeNode());
+                }
             }
-            if (childrenCount < this.count) {
+            if (childrenCount < this.count && (root == null || ((1.0 * (this.count - childrenCount)) / root.count) > FILTER_THRESHOLD)) {
                 ProfilerNode self = new ProfilerNode(tree, null != root ? root : this, "self", this.count - childrenCount);
                 treeNode.insert(new DefaultMutableTreeNode(self), 0);
             }
