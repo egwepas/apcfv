@@ -58,7 +58,7 @@ public class JMainFrame extends javax.swing.JFrame {
         });
     }
 
-    private ParserJfr profilerOutput;
+    private Parser profilerOutput;
     static private final String template = "<html><b>%.2f</b>%% - <span style='color:;'>%s</span><b>%s</b>";
 
     private DefaultListModel<ProfilerMethod> methodsModel;
@@ -294,7 +294,7 @@ public class JMainFrame extends javax.swing.JFrame {
 
     private void openFile(File file) throws IOException {
         setTitle(getTitle() + " - " + file);
-        profilerOutput = new ParserJfr(file);
+        profilerOutput = new Parser(file);
         List<String> threads = new ArrayList<>(profilerOutput.forwardTrees.keySet());
         Collections.sort(threads, (a, b) -> (a == null || b == null) ? 0 : a.compareTo(b));
 

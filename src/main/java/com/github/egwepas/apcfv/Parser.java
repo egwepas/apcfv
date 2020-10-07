@@ -60,8 +60,13 @@ public class Parser {
             try {
                 int countIndex = line.lastIndexOf(' ');
                 int count = Integer.valueOf(line.substring(countIndex + 1));
-                String stack = line.substring(stackStart, countIndex);
-                List<String> methods = Arrays.asList(stack.split(Pattern.quote(";")));
+                String stackLine = line.substring(stackStart, countIndex);
+                String[] stack = stackLine.split(Pattern.quote(";"));
+                for(int i=0; i<stack.length; i++){
+                    stack[i] = stack[i].intern();
+                }
+                List<String> methods = Arrays.asList(stack);
+                
 
                 if (!forwardTrees.containsKey(thread)) {
                     forwardTrees.put(thread, new ProfilerTree());
